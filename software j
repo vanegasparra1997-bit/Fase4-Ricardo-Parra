@@ -148,6 +148,17 @@ def cancelar_reserva():
 
 
 # INTERFAZ GRÁFICA
+def consultar_reservas():
+    total = len(reservas)
+    activas = sum(1 for r in reservas if r.estado == "Confirmada")
+    canceladas = sum(1 for r in reservas if r.estado == "Cancelada")
+
+    messagebox.showinfo(
+        "Resumen de reservas",
+        f"Total de reservas: {total}\n"
+        f"Reservas activas: {activas}\n"
+        f"Reservas canceladas: {canceladas}"
+    )
 ventana = tk.Tk()
 ventana.title("Software FJ - Sistema de Reservas")
 ventana.geometry("650x550")
