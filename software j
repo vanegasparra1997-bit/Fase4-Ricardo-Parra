@@ -75,6 +75,9 @@ def registrar_reserva():
         nombre = entrada_nombre.get()
         documento = entrada_documento.get()
         email = entrada_email.get()
+        for r in reservas:
+            if r.cliente.documento == documento:
+                raise ValueError("Este cliente ya tiene una reserva registrada")
         horas = float(entrada_horas.get())
 
         if nombre == "" or documento == "" or email == "":
