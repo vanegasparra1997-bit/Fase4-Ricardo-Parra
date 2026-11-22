@@ -1,0 +1,214 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import logging
+
+# Registro de eventos
+logging.basicConfig(
+    filename="software_fj.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s"
+)
+
+
+# CLASE CLIENTE
+class Cliente:
+    def __init__(self, nombre, documento, email):
+        self.nombre = nombre
+        self.documento = documento
+        self.email = email
+
+
+# CLASE SERVICIO
+class Servicio:
+    def __init__(self, nombre, precio):
+        self.nombre = nombre
+        self.precio = precio
+
+    def calcular_costo(self, horas):
+        return self.precio * horas
+
+
+# HERENCIA
+class Sala(Servicio):
+    def calcular_costo(self, horas):
+        return self.precio * horas * 1.10
+
+
+class Equipo(Servicio):
+    def calcular_costo(self, horas):
+        return self.precio * horas
+
+
+class Asesoria(Servicio):
+    def calcular_costo(self, horas):
+        return self.precio * horas * 1.5
+
+
+# CLASE RESERVA
+class Reserva:
+    def __init__(self, cliente, servicio, horas):
+        self.cliente = cliente
+        self.servicio = servicio
+        self.horas = horas
+        self.estado = "Confirmada"
+        self.total = servicio.calcular_costo(horas)
+
+    def cancelar(self):
+        self.estado = "Cancelada"
+
+
+# DATOS DEL SISTEMA
+reservas = []
+
+servicios = {
+    "Sala": Sala("Sala de reuniones", 80000),
+    "Equipo": Equipo("Proyector", 15000),
+    "Asesoria": Asesoria("Asesoria profesional", 120000)
+}
+
+
+# FUNCIONES DE LA INTERFAZ
+def registrar_reserva():
+    try:
+        nombre = entrada_nombre.get()
+        documento = entrada_documento.get()
+        email = entrada_email.get()
+        horas = float(entrada_horas.get())
+
+        if nombre == "" or documento == "" or email == "":
+            raise ValueError("Todos los datos son obligatorios")
+
+        if horas <= 0:
+            raise ValueError("Las horas deben ser mayores que cero")
+
+        cliente = Cliente(nombre, documento, email)
+
+        tipo = lista_servicios.get()
+        servicio = servicios[tipo]
+
+        reserva = Reserva(cliente, servicio, horas)
+        reservas.append(reserva)
+
+        lista.insert(
+            tk.END,
+            f"{nombre} | {servicio.nombre} | "
+            f"{horas} horas | ${reserva.total:,.0f}"
+        )
+
+        logging.info("Reserva registrada: %s", nombre)
+
+        mensaje.set("Reserva registrada correctamente")
+
+        entrada_nombre.delete(0, tk.END)
+        entrada_documento.delete(0, tk.END)
+        entrada_email.delete(0, tk.END)
+        entrada_horas.delete(0, tk.END)
+
+    except ValueError as error:
+        messagebox.showerror("Error", str(error))
+
+    except Exception as error:
+        logging.error("Error: %s", error)
+        messagebox.showerror("Error", "No se pudo registrar la reserva")
+
+
+def cancelar_reserva():
+    try:
+        seleccion = lista.curselection()
+
+        if not seleccion:
+            raise ValueError("Seleccione una reserva")
+
+        posicion = seleccion[0]
+        reserva = reservas[posicion]
+
+        if reserva.estado == "Cancelada":
+            raise ValueError("La reserva ya está cancelada")
+
+        reserva.cancelar()
+
+        lista.delete(posicion)
+        lista.insert(
+            posicion,
+            f"{reserva.cliente.nombre} | "
+            f"{reserva.servicio.nombre} | CANCELADA"
+        )
+
+        logging.info("Reserva cancelada")
+
+        mensaje.set("Reserva cancelada correctamente")
+
+    except ValueError as error:
+        messagebox.showerror("Error", str(error))
+
+
+# INTERFAZ GRÁFICA
+ventana = tk.Tk()
+ventana.title("Software FJ - Sistema de Reservas")
+ventana.geometry("650x550")
+
+tk.Label(
+    ventana,
+    text="SOFTWARE FJ",
+    font=("Arial", 18, "bold")
+).pack(pady=10)
+
+tk.Label(ventana, text="Nombre del cliente").pack()
+entrada_nombre = tk.Entry(ventana, width=35)
+entrada_nombre.pack()
+
+tk.Label(ventana, text="Documento").pack()
+entrada_documento = tk.Entry(ventana, width=35)
+entrada_documento.pack()
+
+tk.Label(ventana, text="Correo electrónico").pack()
+entrada_email = tk.Entry(ventana, width=35)
+entrada_email.pack()
+
+tk.Label(ventana, text="Tipo de servicio").pack()
+
+lista_servicios = ttk.Combobox(
+    ventana,
+    values=["Sala", "Equipo", "Asesoria"],
+    state="readonly"
+)
+lista_servicios.current(0)
+lista_servicios.pack()
+
+tk.Label(ventana, text="Cantidad de horas").pack()
+entrada_horas = tk.Entry(ventana, width=35)
+entrada_horas.pack()
+
+tk.Button(
+    ventana,
+    text="Registrar Reserva",
+    bg="green",
+    fg="white",
+    command=registrar_reserva
+).pack(pady=10)
+
+tk.Label(
+    ventana,
+    text="Reservas Registradas",
+    font=("Arial", 12, "bold")
+).pack()
+
+lista = tk.Listbox(ventana, width=75, height=10)
+lista.pack(pady=10)
+
+tk.Button(
+    ventana,
+    text="Cancelar Reserva Seleccionada",
+    bg="red",
+    fg="white",
+    command=cancelar_reserva
+).pack(pady=5)
+
+mensaje = tk.StringVar()
+tk.Label(
+    ventana,
+    textvariable=mensaje,
+    fg="blue"
+).pack(pady=10)
+
+ventana.mainloop()
