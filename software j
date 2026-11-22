@@ -219,6 +219,13 @@ tk.Button(
     fg="white",
     command=cancelar_reserva
 ).pack(pady=5)
+tk.Button(
+    ventana,
+    text="Consultar Reservas",
+    bg="blue",
+    fg="white",
+    command=consultar_reservas
+).pack(pady=5)
 
 mensaje = tk.StringVar()
 tk.Label(
