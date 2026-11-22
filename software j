@@ -51,7 +51,9 @@ class Reserva:
         self.servicio = servicio
         self.horas = horas
         self.estado = "Confirmada"
-        self.total = servicio.calcular_costo(horas)
+        self.subtotal = servicio.calcular_costo(horas)
+        self.iva = self.subtotal * 0.19
+        self.total = self.subtotal + self.iva
 
     def cancelar(self):
         self.estado = "Cancelada"
